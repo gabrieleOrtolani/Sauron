@@ -20,7 +20,8 @@ Quando ho rclcpp -> Mi muovo nello spazio di ros
 Ogni volta che ho i due punti specifico una specie di percorso path ->
 Esempio riga 37 -> &Sub dico che devo muovermi nello spazio di lavoro della funzione Sub e cercare all'interno di Sub callbAck
 */
-//Sub è il nome --> Node sono le proprietà che eredita (Sub è un nodo)!
+//Sub è il nome --> Node è la classe padre, di cui lui eredita tutti i suoi attrb e metodi (Sub è un nodo)!
+// parto dalla classe ::Node e definisco nuova classe sub che eredita tutti gli attrb e metodi public e protected della classe Node
 class Sub : public rclcpp::Node{
 
 public:
