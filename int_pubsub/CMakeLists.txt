@@ -32,6 +32,18 @@ ament_target_dependencies(
 )
 
 # subscriber
+add_executable(forward_sub src/forward_sub.cpp)
+target_include_directories(sub PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+ament_target_dependencies(
+  sub
+  "rclcpp"
+  "std_msgs"
+)
+
+
+# subscriber
 add_executable(sub src/sub.cpp)
 target_include_directories(sub PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -43,11 +55,14 @@ ament_target_dependencies(
 )
 
 
-
 install(TARGETS pub
   DESTINATION lib/${PROJECT_NAME})
 
 install(TARGETS sub
+  DESTINATION lib/${PROJECT_NAME})
+
+
+install(TARGETS forward_sub
   DESTINATION lib/${PROJECT_NAME})
 
 
