@@ -1,0 +1,16 @@
+ros2init; . /install/local_setup.zsh
+----------------------COLCON BUILD------------------------------
+colcon build
+colcon build --event-handlers console_direct+ --symlink-install --packages-select ros2_usb_camera 
+colcon build --packages-select <nome_pkg>
+---------------------------------------------------------------
+----------------------WEBCAM START------------------------------
+subscriber:
+
+ros2 service call /enable_camera std_srvs/srv/SetBool "{data: true}"
+ros2 run rqt_image_view rqt_image_view   
+
+publisher:
+
+ros2 launch ros2_usb_camera usb_camera_driver_app.launch.py  
+---------------------------------------------------------------

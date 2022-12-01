@@ -44,6 +44,7 @@
 #include <QPainter>
 
 #define MY_MARKER 15
+bool find = false;
 
 namespace rqt_image_view {
 
@@ -556,14 +557,13 @@ void ImageView::overlayGrid()
 
 void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg)
 {
-  //std::cout << "callbackstart"<< std::endl;
+  
   try
   {
-    cv::Mat im_copy;
     // First let cv_bridge do its magic
     cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::RGB8);
     conversion_mat_ = cv_ptr->image;
-   // std::cout << "try1"<< std::endl;
+    // ARUCO DETECTION
     std::vector<int> ids;
     std::vector<std::vector<cv::Point2f>> corners;
     cv::aruco::detectMarkers(conversion_mat_,
@@ -571,25 +571,38 @@ void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg
       corners,
       ids);
 
-    bool find = false;
+    //if the vector size is greater than zero, then the frame contains Aruco code.
     if (ids.size() > 0) {
       std::cout << "Detected: [";
       for(int i=0; i<ids.size(); i++){
-        std::cout << " ";
-        std::cout << ids[i];
-        std::cout << ",";
-        if(ids[i] == MY_MARKER) find = true;
-        else find = false;
+        std::cout << " "<< ids[i] << ",";
+        // if I find the marker I wanted in the vector, I set find=true
+        if(ids[i] == MY_MARKER) find=true;
       }
-      std::cout << "]";
+      std::cout<< "\b" << "]-->";
+      cv::aruco::drawDetectedMarkers(conversion_mat_, corners, ids);
+     
+      //if in the array I didn't find the markers I wanted, then it must be find=true
+      if(find == false){
+        std::cout << " Not Detected my aruco marker" << MY_MARKER <<std::endl;
+      
+      }
+      else {
+        //if, on the other hand, the "find" variable is modified during the for,
+        // we have found the marker we were looking for
+        std::cout << " Detected my aruco marker " << MY_MARKER <<std::endl;
+        // reset the variable find to false for the next frame
+        find=false;
+    
+      } 
     }
-    else std::cout << " No markers detected" << std::endl;
+    else{
+      //in this case, the frame does not contain Aruco code
+      std::cout << " No aruco markers detected " << std::endl;
+      
+    }
 
-    if(find == true){
-      std::cout << " Detected my aruco" << std::endl;
-      cv::aruco::drawDetectedMarkers(conversion_mat_, corners, ids); 
-    }
-    else std::cout << " My aruco not detected" << std::endl;
+
 
     if (num_gridlines_ > 0)
       overlayGrid();
@@ -598,7 +611,6 @@ void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg
   {
     try
     {
-      //std::cout << "try2"<< std::endl;
       // If we're here, there is no conversion that makes sense, but let's try to imagine a few first
       cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvShare(msg);
       if (msg->encoding == "CV_8UC3")
@@ -634,7 +646,6 @@ void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg
     }
     catch (cv_bridge::Exception& e)
     {
-      //std::cout << "try3"<< std::endl;
       qWarning("ImageView.callback_image() while trying to convert image from '%s' to 'rgb8' an exception was thrown (%s)", msg->encoding.c_str(), e.what());
       ui_.image_frame->setImage(QImage());
       return;
