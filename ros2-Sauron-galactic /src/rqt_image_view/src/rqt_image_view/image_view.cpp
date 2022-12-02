@@ -586,13 +586,13 @@ void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg
       std::cout<< "\b" << "]-->";
       cv::aruco::drawDetectedMarkers(conversion_mat_, corners, ids, cv::Scalar(255, 0, 0));
      
-      //if in the array I didn't find the markers I wanted, then it must be find=false
+      //if in the array I didn't find the markers I wanted, then it must be find=true
       if(find == false){
         std::cout << " Not Detected my aruco marker" << MY_MARKER <<std::endl;
       
       }
       else {
-        //if, on the other case, the "find" variable is modified during the for,
+        //if, on the other hand, the "find" variable is modified during the for,
         // we have found the marker we were looking for
         std::cout << " Detected my aruco marker " << MY_MARKER <<std::endl;
         std::vector<int> pippo = {ids[mypos_markers]};
