@@ -3,11 +3,11 @@
     base_topic_name: camera
     best_effort_qos: true
     brightness: 0.0
-    camera_calibration_file: file://config/camera.yaml
+    camera_calibration_file: file:///home/ros/workspace/src/ros2_usb_camera-galactic/config/camera.yaml
     camera_id: 2
     camera_name: camera
     exposure: 0.0
-    fps: 20
+    fps: 30
     frame_id: map
     image_height: 480
     image_width: 640

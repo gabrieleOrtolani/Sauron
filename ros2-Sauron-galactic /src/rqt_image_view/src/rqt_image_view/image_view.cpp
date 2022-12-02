@@ -570,6 +570,7 @@ void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg
       cv::aruco::getPredefinedDictionary(cv::aruco::DICT_ARUCO_ORIGINAL),
       corners,
       ids);
+    int mypos_markers;
 
     //if the vector size is greater than zero, then the frame contains Aruco code.
     if (ids.size() > 0) {
@@ -577,10 +578,13 @@ void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg
       for(int i=0; i<ids.size(); i++){
         std::cout << " "<< ids[i] << ",";
         // if I find the marker I wanted in the vector, I set find=true
-        if(ids[i] == MY_MARKER) find=true;
+        if(ids[i] == MY_MARKER) {
+          find=true;
+          mypos_markers = i;
+        }
       }
       std::cout<< "\b" << "]-->";
-      cv::aruco::drawDetectedMarkers(conversion_mat_, corners, ids);
+      cv::aruco::drawDetectedMarkers(conversion_mat_, corners, ids, cv::Scalar(255, 0, 0));
      
       //if in the array I didn't find the markers I wanted, then it must be find=true
       if(find == false){
@@ -591,8 +595,12 @@ void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg
         //if, on the other hand, the "find" variable is modified during the for,
         // we have found the marker we were looking for
         std::cout << " Detected my aruco marker " << MY_MARKER <<std::endl;
+        std::vector<int> pippo = {ids[mypos_markers]};
+        std::vector<std::vector<cv::Point2f>> pluto = {corners[mypos_markers]};
+        std::cout << pippo.size() <<  " " << pluto.size() <<std::endl;
+        cv::aruco::drawDetectedMarkers(conversion_mat_, pluto, pippo, cv::Scalar(0, 255, 0));
         // reset the variable find to false for the next frame
-        find=false;
+        find = false;
     
       } 
     }
