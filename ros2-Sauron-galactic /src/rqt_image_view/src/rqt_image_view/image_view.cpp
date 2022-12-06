@@ -38,6 +38,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/aruco.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/calib3d.hpp>
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -563,6 +564,9 @@ void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg
     // First let cv_bridge do its magic
     cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::RGB8);
     conversion_mat_ = cv_ptr->image;
+
+
+    
     // ARUCO DETECTION
     std::vector<int> ids;
     std::vector<std::vector<cv::Point2f>> corners;
@@ -594,14 +598,26 @@ void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg
       else {
         //if, on the other hand, the "find" variable is modified during the for,
         // we have found the marker we were looking for
-        std::cout << " Detected my aruco marker " << MY_MARKER <<std::endl;
-        std::vector<int> pippo = {ids[mypos_markers]};
-        std::vector<std::vector<cv::Point2f>> pluto = {corners[mypos_markers]};
-        std::cout << pippo.size() <<  " " << pluto.size() <<std::endl;
-        cv::aruco::drawDetectedMarkers(conversion_mat_, pluto, pippo, cv::Scalar(0, 255, 0));
+        std::cout << " Detected my aruco marker " << MY_MARKER << std::endl;
+        std::vector<int> my_aruco_id = {ids[mypos_markers]};
+        std::vector<std::vector<cv::Point2f>> my_aruco_corners = {corners[mypos_markers]};
+        //std::cout << pippo.size() <<  " " << pluto.size() << std::endl;
+        cv::aruco::drawDetectedMarkers(conversion_mat_, my_aruco_corners, my_aruco_id, cv::Scalar(0, 255, 0));
+        float mymatrix[3][3]={{494.299065, 0.000000, 332.196828}, {0.000000, 662.458164, 247.101468}, {0.000000, 0.000000, 1.000000}};
+        
+        cv::Mat cameraMatrix = cv::Mat(3,3, CV_32F, mymatrix);
+        float mydist[1][5] = {-0.345012, 0.095848, 0.002051, 0.000171, 0.000000};
+        cv::Mat distCoeffs = cv::Mat(1,5,CV_32F,mydist);
+        std::vector<cv::Vec3d> rvecs, tvecs;
+        cv::aruco::estimatePoseSingleMarkers(my_aruco_corners, 0.1, cameraMatrix, distCoeffs, rvecs, tvecs);
+         
+       for (int i = 0; i < rvecs.size(); ++i) {
+            auto rvec = rvecs[i];
+            auto tvec = tvecs[i];
+            cv::drawFrameAxes(conversion_mat_, cameraMatrix, distCoeffs, rvec, tvec, 0.05);
+        }
         // reset the variable find to false for the next frame
         find = false;
-    
       } 
     }
     else{

@@ -67,6 +67,8 @@ public:
 
   ImageView();
 
+  
+  
   virtual void initPlugin(qt_gui_cpp::PluginContext& context);
 
   virtual void shutdownPlugin();

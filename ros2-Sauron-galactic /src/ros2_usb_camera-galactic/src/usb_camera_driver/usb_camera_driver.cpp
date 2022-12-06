@@ -190,6 +190,9 @@ void CameraDriverNode::camera_sampling_routine()
             map2_,
             cv::InterpolationFlags::INTER_LINEAR,
             cv::BorderTypes::BORDER_CONSTANT);
+            
+            
+            
 #endif
           rect_image_msg = frame_to_msg(rectified_frame_);
           rect_image_msg->header.set__stamp(timestamp);
@@ -216,12 +219,16 @@ void CameraDriverNode::camera_sampling_routine()
             map2_,
             cv::InterpolationFlags::INTER_LINEAR,
             cv::BorderTypes::BORDER_CONSTANT);
+            
 #endif
+
           rect_image_msg = frame_to_msg(rectified_frame_);
           rect_image_msg->header.set__stamp(timestamp);
           rect_image_msg->header.set__frame_id(frame_id_);
         }
+
         image_msg = frame_to_msg(frame_);
+        
       }
       image_msg->header.set__stamp(timestamp);
       image_msg->header.set__frame_id(frame_id_);

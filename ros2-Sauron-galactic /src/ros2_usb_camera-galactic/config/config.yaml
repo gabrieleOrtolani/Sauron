@@ -7,9 +7,9 @@
     camera_id: 2
     camera_name: camera
     exposure: 0.0
-    fps: 30
+    fps: 21
     frame_id: map
-    image_height: 480
+    image_height: 360
     image_width: 640
     is_flipped: false
     wb_temperature: 0.0
