@@ -598,7 +598,7 @@ void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg
       else {
         //if, on the other hand, the "find" variable is modified during the for,
         // we have found the marker we were looking for
-        std::cout << " Detected my aruco marker " << MY_MARKER << std::endl;
+        std::cout << " Detected my aruco marker " << MY_MARKER;
         std::vector<int> my_aruco_id = {ids[mypos_markers]};
         std::vector<std::vector<cv::Point2f>> my_aruco_corners = {corners[mypos_markers]};
         //std::cout << pippo.size() <<  " " << pluto.size() << std::endl;
@@ -614,8 +614,10 @@ void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg
        for (int i = 0; i < rvecs.size(); ++i) {
             auto rvec = rvecs[i];
             auto tvec = tvecs[i];
+            std::cout<<tvecs[i]*100<<std::endl;
             cv::drawFrameAxes(conversion_mat_, cameraMatrix, distCoeffs, rvec, tvec, 0.05);
         }
+        
         // reset the variable find to false for the next frame
         find = false;
       } 
