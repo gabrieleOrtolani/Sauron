@@ -58,7 +58,7 @@
 namespace rqt_image_view {
 
 class ImageView
-  : public rqt_gui_cpp::Plugin
+  : public rqt_gui_cpp::Plugin,rclcpp::Node
 {
 
   Q_OBJECT
@@ -129,7 +129,8 @@ protected:
   cv::Mat conversion_mat_;
 
 private:
-
+  void init_publishers();
+  rclcpp::Publisher<geometry_msgs::msg::Point>::SharedPtr position_pub_;
   enum RotateState {
     ROTATE_0 = 0,
     ROTATE_90 = 1,

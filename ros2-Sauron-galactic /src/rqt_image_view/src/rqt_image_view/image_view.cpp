@@ -29,7 +29,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
+#include <rclcpp/rclcpp.hpp>
 #include <rqt_image_view/image_view.h>
 
 #include <pluginlib/class_list_macros.hpp>
@@ -50,12 +50,13 @@ bool find = false;
 namespace rqt_image_view {
 
 ImageView::ImageView()
-  : rqt_gui_cpp::Plugin()
+  : rqt_gui_cpp::Plugin(), Node("subcriber_node")
   , widget_(0)
   , num_gridlines_(0)
   , rotate_state_(ROTATE_0)
 {
   setObjectName("ImageView");
+  init_publishers();
 }
 
 void ImageView::initPlugin(qt_gui_cpp::PluginContext& context)
@@ -556,17 +557,27 @@ void ImageView::overlayGrid()
   }
 }
 
+void ImageView::init_publishers()
+{
+  // Camera rate
+  std::cout<<__LINE__<<std::endl;
+  position_pub_ = this->rclcpp::Node::create_publisher<geometry_msgs::msg::Point>(
+    "/position",
+    rclcpp::QoS(1));
+    std::cout<<__LINE__<<std::endl;
+
+
+}
+
+
 void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg)
 {
-  
-  try
+   try
   {
     // First let cv_bridge do its magic
     cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::RGB8);
     conversion_mat_ = cv_ptr->image;
 
-
-    
     // ARUCO DETECTION
     std::vector<int> ids;
     std::vector<std::vector<cv::Point2f>> corners;
@@ -592,7 +603,7 @@ void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg
      
       //if in the array I didn't find the markers I wanted, then it must be find=true
       if(find == false){
-        std::cout << " Not Detected my aruco marker" << MY_MARKER <<std::endl;
+        std::cout << " Not Detected my aruco marker " << MY_MARKER <<std::endl;
       
       }
       else {
@@ -603,32 +614,40 @@ void ImageView::callbackImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg
         std::vector<std::vector<cv::Point2f>> my_aruco_corners = {corners[mypos_markers]};
         //std::cout << pippo.size() <<  " " << pluto.size() << std::endl;
         cv::aruco::drawDetectedMarkers(conversion_mat_, my_aruco_corners, my_aruco_id, cv::Scalar(0, 255, 0));
+        // allocate a vector that contains the cameraMatrix
         float mymatrix[3][3]={{494.299065, 0.000000, 332.196828}, {0.000000, 662.458164, 247.101468}, {0.000000, 0.000000, 1.000000}};
-        
         cv::Mat cameraMatrix = cv::Mat(3,3, CV_32F, mymatrix);
+        // allocate a vector that contains the distortion coefficients matrix
         float mydist[1][5] = {-0.345012, 0.095848, 0.002051, 0.000171, 0.000000};
         cv::Mat distCoeffs = cv::Mat(1,5,CV_32F,mydist);
+        // tvecs, rvecs are vector that contains the rotation and traslation matrix
         std::vector<cv::Vec3d> rvecs, tvecs;
         cv::aruco::estimatePoseSingleMarkers(my_aruco_corners, 0.1, cameraMatrix, distCoeffs, rvecs, tvecs);
-         
-       for (int i = 0; i < rvecs.size(); ++i) {
+
+        //setup message
+        auto message = geometry_msgs::msg::Point();
+
+        for (int i = 0; i < rvecs.size(); ++i) {
             auto rvec = rvecs[i];
             auto tvec = tvecs[i];
+            message.set__x(tvecs[i][0]);
+            message.set__y(tvecs[i][1]);
+            message.set__z(tvecs[i][2]);
             std::cout<<tvecs[i]*100<<std::endl;
             cv::drawFrameAxes(conversion_mat_, cameraMatrix, distCoeffs, rvec, tvec, 0.05);
         }
-        
         // reset the variable find to false for the next frame
+
+        // publishing of coordinates
+        position_pub_ -> publish(message);
+
         find = false;
       } 
     }
-    else{
+    else {
       //in this case, the frame does not contain Aruco code
       std::cout << " No aruco markers detected " << std::endl;
-      
     }
-
-
 
     if (num_gridlines_ > 0)
       overlayGrid();
